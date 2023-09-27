@@ -1,0 +1,109 @@
+﻿<script src="~/Scripts/knockout-3.3.0.js"></script>
+<script src="~/Scripts/knockout.viewmodel.2.0.3.js"></script>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+@using Partion.Models
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+<div data-bind="template: { name: 'folder', foreach: $root.List }"></div>
+<script type="text/html" id="folder">
+    <ul>
+        <li>
+            <a class="btn btn-primary" data-bind="click: function(data, event){ $root.toggle(data, $index(), event); }">+</a>
+            <a data-bind="text: Name"></a>
+            <ul data-bind="visible: $data.IsOpen, template: { name: 'child-folder', foreach: Child }"></ul>
+        </li>
+    </ul>
+</script>
+
+<script type="text/html" id="child-folder">
+    <li>
+        <a class="btn btn-primary" data-bind="click: function(data, event){ $root.toggle(data, $index(), event); }">+</a>
+        <a data-bind="text:Name"></a>
+        <ul data-bind="visible: $data.IsOpen, template: { name: 'child-folder', foreach: $root.Child }"></ul>
+
+    </li>
+</script>
+
+<script>
+    function Controller() {
+        var self = this;
+
+        self.List = ko.observableArray([]);
+        self.arrOpen = ko.observableArray([]);
+        self.Folder = ko.viewmodel.fromModel(@Html.Raw(Json.Encode(new FolderModel())));
+        self.Display = function () {
+            debugger;
+           self.List([]);
+
+         $.ajax({
+           type: "POST",
+           url: '@Url.Action("Display")',
+           datatype: "json",
+ 
+          
+           success: function (folders) {
+               if (folders) {
+                   ko.utils.arrayForEach(folders, function (obj) {
+                       self.List.push(obj);
+                   });
+             }
+           },
+           error: function (ex) {
+             var r = jQuery.parseJSON(response.responseText);
+             alert("Message: " + r.Message);
+             alert("StackTrace: " + r.StackTrace);
+             alert("ExceptionType: " + r.ExceptionType);
+           },
+         });
+        };
+
+self.toggle = function (data) {
+    var folderId = data.Id;
+    var isOpen = !data.IsOpen; 
+
+    $.ajax({
+        type: "POST",
+        url: '@Url.Action("ToggleIsOpen")',
+        dataType: "json",
+        data: { folderId: folderId, isOpen: isOpen },
+        success: function (result) {
+            if (result.success) {
+               
+                data.IsOpen = isOpen; 
+            } else {
+                
+                console.error(result.message);
+            }
+        },
+        error: function (ex) {
+            
+            console.error(ex);
+        }
+    });
+};
+
+
+
+        //self.toggle = function (data, index) {
+        //    var length = self.arrOpen()[0].length;
+        //    for (var i = 0; i < self.arrOpen()[0].length; i++) {
+        //        self.arrOpen()[0][i].IsOpen = data.IsOpen;
+        //    }
+        //    //self.ISopen = ko.observable();
+        //    //self.ISopen(data.IsOpen);
+        //    //self.IsOpen()
+        //}
+    }
+
+    $(document).ready(function () {
+        var self = new Controller();
+
+        self.Display();
+        ko.applyBindings(self);
+    });
+
+</script>

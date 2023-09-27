@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="PartionModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+  <EntityType Name="Folder">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="IsOpen" Type="Boolean" />
+    <Property Name="ParentId" Type="Int32" />
+    <NavigationProperty Name="Folder1" Relationship="Self.FK__Folder__ParentId__38996AB5" FromRole="Folder" ToRole="Folder1" />
+    <NavigationProperty Name="Folder2" Relationship="Self.FK__Folder__ParentId__38996AB5" FromRole="Folder1" ToRole="Folder" />
+  </EntityType>
+  <Association Name="FK__Folder__ParentId__38996AB5">
+    <End Role="Folder" Type="Self.Folder" Multiplicity="0..1" />
+    <End Role="Folder1" Type="Self.Folder" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Folder">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Folder1">
+        <PropertyRef Name="ParentId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <EntityContainer Name="FolderContext" annotation:LazyLoadingEnabled="true">
+    <EntitySet Name="Folders" EntityType="Self.Folder" />
+    <AssociationSet Name="FK__Folder__ParentId__38996AB5" Association="Self.FK__Folder__ParentId__38996AB5">
+      <End Role="Folder" EntitySet="Folders" />
+      <End Role="Folder1" EntitySet="Folders" />
+    </AssociationSet>
+  </EntityContainer>
+</Schema>
