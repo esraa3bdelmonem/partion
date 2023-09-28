@@ -48,7 +48,7 @@
            success: function (folders) {
                if (folders) {
                    ko.utils.arrayForEach(folders, function (obj) {
-                       self.List.push(obj);
+                       self.List.push(ko.viewmodel.fromModel(obj));
                    });
              }
            },
@@ -61,7 +61,7 @@
          });
         };
 
-self.toggle = function (data) {
+@*self.toggle = function (data) {
     var folderId = data.Id;
     var isOpen = !data.IsOpen; 
 
@@ -84,19 +84,15 @@ self.toggle = function (data) {
             console.error(ex);
         }
     });
-};
+};*@
 
 
 
-        //self.toggle = function (data, index) {
-        //    var length = self.arrOpen()[0].length;
-        //    for (var i = 0; i < self.arrOpen()[0].length; i++) {
-        //        self.arrOpen()[0][i].IsOpen = data.IsOpen;
-        //    }
-        //    //self.ISopen = ko.observable();
-        //    //self.ISopen(data.IsOpen);
-        //    //self.IsOpen()
-        //}
+        self.toggle = function (data) {
+           
+            data.IsOpen(data.IsOpen);
+            
+        }
     }
 
     $(document).ready(function () {
