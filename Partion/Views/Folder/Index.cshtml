@@ -33,7 +33,7 @@
         var self = this;
 
         self.List = ko.observableArray([]);
-        self.arrOpen = ko.observableArray([]);
+   
         self.Folder = ko.viewmodel.fromModel(@Html.Raw(Json.Encode(new FolderModel())));
         self.Display = function () {
             debugger;
@@ -90,7 +90,7 @@
 
         self.toggle = function (data) {
            
-            data.IsOpen(data.IsOpen);
+            data.IsOpen(!data.IsOpen());
             
         }
     }
