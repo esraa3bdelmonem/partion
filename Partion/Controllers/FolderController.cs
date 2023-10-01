@@ -20,34 +20,13 @@ namespace Partion.Controllers
         {
             return View();
         }
-        public JsonResult Display()
+     
+        public JsonResult Display(int? ParentId= null)
         {
-            var Folders= Context.Folders.Where(c=>!c.ParentId.HasValue).ToList().Select(c=>new FolderModel(c)).ToList();
+            var Folders= Context.Folders.Where(c=>c.ParentId == ParentId).ToList().Select(c=>new FolderModel(c)).ToList();
             return Json(Folders, JsonRequestBehavior.AllowGet);
         }
-        //[HttpPost]
-        //public JsonResult ToggleIsOpen(int folderId, bool isOpen)
-        //{
-        //    try
-        //    {
-        //        var folder = Context.Folders.Find(folderId);
-
-        //        if (folder != null)
-        //        {
-        //            folder.IsOpen = isOpen;
-        //            Context.SaveChanges(); 
-        //            return Json(new { success = true });
-        //        }
-        //        else
-        //        {
-        //            return Json(new { success = false, message = "Folder not found." });
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Json(new { success = false, message = ex.Message });
-        //    }
-        //}
+        
 
     }
 }

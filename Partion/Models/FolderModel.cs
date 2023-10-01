@@ -18,7 +18,7 @@ namespace Partion.Models
             this.Name = obj.Name;
             this.ParentId = obj.ParentId;
             this.IsOpen = obj.IsOpen;
-            this.Child = obj.Folder1.Select(c=> new FolderModel(c)).ToList();
+         
         }
         public int Id { get; set; }
         public string Name { get; set; }

@@ -1,7 +1,7 @@
 ﻿<script src="~/Scripts/knockout-3.3.0.js"></script>
-<script src="~/Scripts/knockout.viewmodel.2.0.3.js"></script>
 <script src="~/Scripts/jquery-3.4.1.min.js"></script>
 <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+
 @using Partion.Models
 @{
     ViewBag.Title = "Index";
@@ -9,96 +9,113 @@
 
 <h2>Index</h2>
 <div data-bind="template: { name: 'folder', foreach: $root.List }"></div>
+
 <script type="text/html" id="folder">
     <ul>
         <li>
-            <a class="btn btn-primary" data-bind="click: function(data, event){ $root.toggle(data, $index(), event); }">+</a>
-            <a data-bind="text: Name"></a>
-            <ul data-bind="visible: $data.IsOpen, template: { name: 'child-folder', foreach: Child }"></ul>
+            <a class="btn btn-primary" data-bind="click: function () { $root.toggle($data); }">+</a>
+            <a data-bind="text: $data.Name"></a>
+            <ul data-bind="visible: $data.IsOpen(), template: { name: 'child-folder', foreach: $data.Child }"></ul>
         </li>
     </ul>
 </script>
 
 <script type="text/html" id="child-folder">
     <li>
-        <a class="btn btn-primary" data-bind="click: function(data, event){ $root.toggle(data, $index(), event); }">+</a>
-        <a data-bind="text:Name"></a>
-        <ul data-bind="visible: $data.IsOpen, template: { name: 'child-folder', foreach: $root.Child }"></ul>
-
+        <a class="btn btn-primary" data-bind="click: function () { $root.toggle($data); }">+</a>
+        <a data-bind="text: $data.Name"></a>
+        <ul data-bind="visible: $data.IsOpen(), template: { name: 'child-folder', foreach: $data.Child }"></ul>
     </li>
 </script>
 
 <script>
+    function Folder(id, parentId) {
+        var self = this;
+        self.Id = ko.observable(id);
+        self.ParentId = ko.observable(parentId);
+        self.Child = ko.observableArray([]);
+        self.IsOpen = ko.observable(false);
+        self.Name = ko.observable("");
+    }
+
     function Controller() {
         var self = this;
 
         self.List = ko.observableArray([]);
-   
-        self.Folder = ko.viewmodel.fromModel(@Html.Raw(Json.Encode(new FolderModel())));
-        self.Display = function () {
-            debugger;
-           self.List([]);
 
-         $.ajax({
-           type: "POST",
-           url: '@Url.Action("Display")',
-           datatype: "json",
- 
-          
-           success: function (folders) {
-               if (folders) {
-                   ko.utils.arrayForEach(folders, function (obj) {
-                       self.List.push(ko.viewmodel.fromModel(obj));
-                   });
-             }
-           },
-           error: function (ex) {
-             var r = jQuery.parseJSON(response.responseText);
-             alert("Message: " + r.Message);
-             alert("StackTrace: " + r.StackTrace);
-             alert("ExceptionType: " + r.ExceptionType);
-           },
-         });
+        function findFolderById(idToFind) {
+            return ko.utils.arrayFirst(self.List(), function (folder) {
+                return ko.toJS(folder.Id) === idToFind;
+            });
+        }
+
+        function createFolderFromModel(obj) {
+            var folder = new Folder(obj.Id, obj.ParentId);
+            folder.Name(obj.Name);
+            return folder;
+        }
+
+        self.Display = function (ParentId, targetList) {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Display")',
+                datatype: "json",
+                data: { ParentId: ParentId },
+                success: function (folders) {
+                    if (folders) {
+                        ko.utils.arrayForEach(folders, function (obj) {
+                            var folder = createFolderFromModel(obj);
+                            if (!targetList) {
+                                targetList = self.List;
+                            }
+                            var parentFolder = findFolderById(obj.ParentId);
+                            if (parentFolder) {
+                               
+                                var existingChild = ko.utils.arrayFirst(parentFolder.Child(), function (child) {
+                                    return child.Id() === folder.Id();
+                                });
+
+                                if (!existingChild) {
+                                    parentFolder.Child.push(folder);
+                                }
+                            } else {
+                                
+                                var existingChild = ko.utils.arrayFirst(targetList(), function (child) {
+                                    return child.Id() === folder.Id();
+                                });
+
+                                if (!existingChild) {
+                                    targetList.push(folder);
+                                }
+                            }
+                        });
+                    }
+                },
+                error: function (ex) {
+                    var r = jQuery.parseJSON(response.responseText);
+                    alert("Message: " + r.Message);
+                    alert("StackTrace: " + r.StackTrace);
+                    alert("ExceptionType: " + r.ExceptionType);
+                },
+            });
         };
 
-@*self.toggle = function (data) {
-    var folderId = data.Id;
-    var isOpen = !data.IsOpen; 
-
-    $.ajax({
-        type: "POST",
-        url: '@Url.Action("ToggleIsOpen")',
-        dataType: "json",
-        data: { folderId: folderId, isOpen: isOpen },
-        success: function (result) {
-            if (result.success) {
-               
-                data.IsOpen = isOpen; 
+        self.toggle = function (data) {
+            if (!data.IsOpen()) {
+                self.Display(data.Id(), data.Child);
             } else {
                 
-                console.error(result.message);
+                data.Child([]);
             }
-        },
-        error: function (ex) {
-            
-            console.error(ex);
-        }
-    });
-};*@
-
-
-
-        self.toggle = function (data) {
-           
             data.IsOpen(!data.IsOpen());
-            
-        }
+        };
+
+        self.Display(null, self.List); 
     }
 
     $(document).ready(function () {
         var self = new Controller();
 
-        self.Display();
         ko.applyBindings(self);
     });
 
