@@ -61,14 +61,14 @@
                     if (ParentId !== null) {
                         var find = findObjectById(self.List, obj.ParentId);
 
-                        //    if (!Array.isArray(find.Child)) { // Check if it's an observable array
-                        //        find.Child([]); // Initialize it as an empty observable array
+                        //    if (!Array.isArray(find.Child)) { 
+                        //        find.Child([]);
                         //    }
 
-                        //    find.Child.push(ko.viewmodel.fromModel(obj)); // Push the child into the observable array
+                        //    find.Child.push(ko.viewmodel.fromModel(obj)); 
                         //}
-                        if (!ko.isObservable(find.Child)) { // Check if it's an observable
-                            find.Child = ko.observableArray([]); // Initialize it as an empty observable array
+                        if (!ko.isObservable(find.Child)) {
+                            find.Child = ko.observableArray([]); 
                         }
 
                         find.Child().push(ko.viewmodel.fromModel(obj));
@@ -91,7 +91,7 @@
                 self.Display(data.Id);
             }
 
-            // Push the 'find' object into the 'self.List' observable array
+            
             self.List.push(ko.viewmodel.fromModel(find));
 
             data.IsOpen(!data.IsOpen());

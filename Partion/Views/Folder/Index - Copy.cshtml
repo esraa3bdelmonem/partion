@@ -63,7 +63,7 @@
         };
         self.toggle = function (data) {
             if (!data.IsOpen()) {
-                // If the folder is closed, fetch its child folders and add them to the same list.
+               
                 self.Display(data.Id);
             }
             data.IsOpen(!data.IsOpen());
