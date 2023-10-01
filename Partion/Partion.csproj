@@ -227,6 +227,7 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Folder\Index.cshtml" />
     <Content Include="Views\Folder\Index - Copy.cshtml" />
+    <Content Include="Views\Folder\View.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -1,0 +1,117 @@
+﻿<script src="~/Scripts/knockout-3.3.0.js"></script>
+<script src="~/Scripts/knockout.viewmodel.2.0.3.js"></script>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+@using Partion.Models
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+<div data-bind="template: { name: 'folder', foreach: $root.List }"></div>
+<script type="text/html" id="folder">
+    <ul>
+        <li>
+            <a class="btn btn-primary" data-bind="click: function(data, event){ $root.toggle(data, $index(), event); }">+</a>
+            <a data-bind="text: $data.Name"></a>
+
+            <ul data-bind="visible: $data.IsOpen(), template: { name: 'child-folder', foreach: $data.Child }"></ul>
+
+        </li>
+    </ul>
+</script>
+
+<script type="text/html" id="child-folder">
+    <li>
+        <a class="btn btn-primary" data-bind="click: function(data, event){ $root.toggle(data, $index(), event); }">+</a>
+        <a data-bind="text: $data.Name"></a>
+
+        <ul data-bind="visible: $data.IsOpen(), template: { name: 'child-folder', foreach: $data.Child }"></ul>
+
+
+    </li>
+</script>
+
+<script>
+    function Controller() {
+        var self = this;
+
+        self.List = ko.observableArray([]);
+        self.Child = ko.observableArray([]);
+        self.ParentId = null;
+        self.Folder = ko.viewmodel.fromModel(@Html.Raw(Json.Encode(new FolderModel())));
+        function findObjectById(list, idToFind) {
+            for (var i = 0; i < list().length; i++) {
+                if (ko.toJS(list()[i].Id) === idToFind) {
+                    return ko.toJS(list()[i]);
+
+                }
+            }
+            return ko.toJS(list()[0]);
+        }
+        self.Display = function (ParentId) {
+    $.ajax({
+        type: "POST",
+        url: '@Url.Action("Display")',
+        datatype: "json",
+        data: { ParentId: ParentId },
+        success: function (folders) {
+            if (folders) {
+                ko.utils.arrayForEach(folders, function (obj) {
+                    if (ParentId !== null) {
+                        var find = findObjectById(self.List, obj.ParentId);
+
+                        //    if (!Array.isArray(find.Child)) { // Check if it's an observable array
+                        //        find.Child([]); // Initialize it as an empty observable array
+                        //    }
+
+                        //    find.Child.push(ko.viewmodel.fromModel(obj)); // Push the child into the observable array
+                        //}
+                        if (!ko.isObservable(find.Child)) { // Check if it's an observable
+                            find.Child = ko.observableArray([]); // Initialize it as an empty observable array
+                        }
+
+                        find.Child().push(ko.viewmodel.fromModel(obj));
+                    }
+                    self.List.push(ko.viewmodel.fromModel(obj));
+                });
+            }
+        },
+        error: function (ex) {
+            var r = jQuery.parseJSON(response.responseText);
+            alert("Message: " + r.Message);
+            alert("StackTrace: " + r.StackTrace);
+            alert("ExceptionType: " + r.ExceptionType);
+        },
+    });
+};
+
+        self.toggle = function (data) {
+            if (!data.IsOpen()) {
+                self.Display(data.Id);
+            }
+
+            // Push the 'find' object into the 'self.List' observable array
+            self.List.push(ko.viewmodel.fromModel(find));
+
+            data.IsOpen(!data.IsOpen());
+
+        };
+
+        self.Display(self.ParentId);
+
+
+    }
+
+    $(document).ready(function () {
+        var self = new Controller();
+        ko.applyBindings(self);
+    });
+
+</script>
+@{
+    ViewBag.Title = "View";
+}
+
+<h2>View</h2>
+
